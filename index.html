@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简易动物分类工具</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+
+        body {
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            background-color: #FFD954;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #FFF5CC;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 3px solid white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #d95a00;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header h1::before, .header h1::after {
+            content: '🐾';
+            font-size: 0.8em;
+        }
+
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-item label {
+            background-color: #fff;
+            color: #E8A23A;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #FFD954;
+            font-weight: 500;
+        }
+
+        .checkbox-item input[type="checkbox"]:checked + label {
+            background-color: #FFC107;
+            color: white;
+            border-color: #E8A23A;
+            transform: scale(1.05);
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .result-group {
+            background-color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #FFD954;
+        }
+
+        .result-group h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #d95a00;
+            font-size: 1.2em;
+            border-bottom: 2px dashed #FFD954;
+            padding-bottom: 8px;
+        }
+
+        .result-group p {
+            margin: 0;
+            color: #555;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .animal-tag {
+            background-color: #FFF5CC;
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: #E8A23A;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-weight: bold;
+            color: #E8A23A;
+            font-family: 'Arial Black', sans-serif;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>动物分类</h1>
+        </div>
+
+        <div id="checkbox-container" class="checkbox-container">
+            <!-- Checkboxes will be inserted here by JavaScript -->
+        </div>
+
+        <div id="results">
+            <!-- Results will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="footer">
+            By SammFang
+        </div>
+    </div>
+
+    <script>
+        const animalData = {
+            "会下蛋的动物": ["鳄霸", "地包天", "阿瓜", "阿呆", "木木", "柯蒂斯", "锤子", "咕咕", "布鲁斯", "阿宝", "豆豆", "泰雷斯", "哥斯拉", "扣扣", "糊涂", "瑞文"],
+            "会潜水的动物": ["鳄霸", "瓦特", "阿瓜", "阿呆", "图斯卡尔", "锤子", "布鲁斯", "阿宝", "哈士企", "哥斯拉", "2662", "奥里", "扣扣", "巴巴拉"],
+            "会飞的动物": ["阿瓜", "阿呆", "木木", "咕咕", "优罗莎", "暴莉", "阿宝", "瑞文", "2662", "糊涂"],
+            "吃植物的动物": ["卡洛特", "培根", "芭比", "瓦力", "莫斯", "阿瓜", "阿呆", "柯蒂斯", "白菜狗", "咕咕", "优罗莎", "宝伯", "小新", "可乐", "高非", "奥姆诺姆", "豆豆", "福吉", "福宝", "坨坨", "巴巴拉"],
+            "吃肉的动物": ["尼莫", "鳄霸", "地包天", "玛奇朵", "瓦特", "泰哥", "斯帕奇", "图斯卡尔", "八公", "加肥", "珞珞", "木木", "毛毛", "麦克斯", "锤子", "利威尔", "布鲁斯", "希子", "卡托", "雪诺", "嘟嘟", "刺头", "桑尼", "玛奈奇", "山姆", "哈士企", "苗苗", "星期天", "罗恩", "斯黛拉", "扣扣", "妙妙", "瑞文", "狐狸Vicksy", "糊涂"],
+            "头上长角的动物": ["地包天", "瓦力", "莫斯", "柯蒂斯", "暴莉", "咩咩", "阿宝"],
+            "尾巴长的动物": ["鳄霸", "地包天", "玛奇朵", "泰哥", "斯帕奇", "八公", "加肥", "珞珞", "毛毛", "麦克斯", "柯蒂斯", "锤子", "利威尔", "咕咕", "布鲁斯", "奥里", "希子", "卡托", "雪诺", "嘟嘟", "阿宝", "玛奈奇", "山姆", "福吉", "苗苗", "星期天", "坨坨", "狐狸Vicksy", "妙妙"],
+            "毛茸茸的动物": ["尼莫", "玛奇朵", "卡洛特", "瓦特", "泰哥", "芭比", "瓦力", "莫斯", "八公", "加肥", "珞珞", "毛毛", "麦克斯", "利威尔", "希子", "卡托", "宝伯", "咩咩", "雪诺", "嘟嘟", "刺头", "可乐", "阿宝", "高非", "玛奈奇", "山姆", "福吉", "福宝", "哈士企", "苗苗", "星期天", "罗恩", "斯黛拉", "坨坨", "狐狸Vicksy", "妙妙", "扣扣", "巴巴拉", "瑞文"],
+            "犬科动物": ["尼莫", "斯帕奇", "八公", "珞珞", "毛毛", "麦克斯", "卡托", "雪诺", "桑尼", "山姆", "哈士企", "罗恩", "斯黛拉", "Vicksy"],
+            "猫科动物": ["玛奇朵", "泰哥", "加肥", "利威尔", "希子", "嘟嘟", "玛奈奇", "苗苗", "星期天", "妙妙"],
+            "眼睛大的动物": ["鳄霸", "地包天", "阿瓜", "木木", "柯蒂斯", "咕咕", "奥里", "咩咩", "嘟嘟", "阿宝", "奥姆诺姆", "豆豆", "哈士企", "2662", "瑞文", "Vicksy", "糊涂", "坨坨"]
+        };
+
+        const checkboxContainer = document.getElementById('checkbox-container');
+        const resultsContainer = document.getElementById('results');
+
+        // Create checkboxes
+        Object.keys(animalData).forEach(category => {
+            const item = document.createElement('div');
+            item.classList.add('checkbox-item');
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = category;
+            checkbox.value = category;
+            
+            const label = document.createElement('label');
+            label.htmlFor = category;
+            label.textContent = category;
+            
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            checkboxContainer.appendChild(item);
+        });
+
+        checkboxContainer.addEventListener('change', updateResults);
+
+        function updateResults() {
+            const selectedCategories = Array.from(checkboxContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+            resultsContainer.innerHTML = '';
+
+            if (selectedCategories.length === 0) {
+                return;
+            }
+
+            // Generate combinations from all selected down to single items
+            for (let i = selectedCategories.length; i >= 1; i--) {
+                const combinations = getCombinations(selectedCategories, i);
+                combinations.forEach(combo => {
+                    displayIntersection(combo);
+                });
+            }
+        }
+
+        function displayIntersection(categories) {
+            const animalLists = categories.map(cat => new Set(animalData[cat]));
+            
+            const intersection = animalLists.reduce((acc, currentSet) => {
+                return new Set([...acc].filter(animal => currentSet.has(animal)));
+            });
+
+            if (intersection.size > 0) {
+                const resultGroup = document.createElement('div');
+                resultGroup.classList.add('result-group');
+
+                const title = document.createElement('h3');
+                title.textContent = categories.map(c => c.replace(/的动物$/, '')).join('') + '的动物';
+                
+                const animalList = document.createElement('p');
+                if (intersection.size > 0) {
+                    [...intersection].forEach(animal => {
+                        const span = document.createElement('span');
+                        span.className = 'animal-tag';
+                        span.textContent = animal;
+                        animalList.appendChild(span);
+                    });
+                } else {
+                    animalList.textContent = '没有符合所有条件的动物。';
+                }
+
+                resultGroup.appendChild(title);
+                resultGroup.appendChild(animalList);
+                resultsContainer.appendChild(resultGroup);
+            }
+        }
+
+        // Helper function to get combinations of a certain size from an array
+        function getCombinations(arr, size) {
+            const result = [];
+            function combine(startIndex, currentCombination) {
+                if (currentCombination.length === size) {
+                    result.push([...currentCombination]);
+                    return;
+                }
+                for (let i = startIndex; i < arr.length; i++) {
+                    currentCombination.push(arr[i]);
+                    combine(i + 1, currentCombination);
+                    currentCombination.pop();
+                }
+            }
+            combine(0, []);
+            return result;
+        }
+    </script>
+</body>
+</html>
